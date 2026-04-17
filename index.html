@@ -1,17 +1,207 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 Filtro de Bloom Interactivo</title>
     <link rel="stylesheet" href="styles.css">
-    <title>Bloom Filter Interactive Interface</title>
 </head>
 <body>
-    <h1>Interactive Bloom Filter</h1>
-    <input type="text" id="inputElement" placeholder="Enter a value">
-    <button id="addButton">Add</button>
-    <button id="checkButton">Check</button>
-    <div id="result"></div>
+    <!-- FONDO ANIMADO -->
+    <div class="animated-bg">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <div class="container">
+        <!-- HEADER -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="title">
+                    <span class="char">🔍</span>
+                    <span class="char">F</span>
+                    <span class="char">i</span>
+                    <span class="char">l</span>
+                    <span class="char">t</span>
+                    <span class="char">r</span>
+                    <span class="char">o</span>
+                    <span class="char"> </span>
+                    <span class="char">d</span>
+                    <span class="char">e</span>
+                    <span class="char"> </span>
+                    <span class="char">B</span>
+                    <span class="char">l</span>
+                    <span class="char">o</span>
+                    <span class="char">o</span>
+                    <span class="char">m</span>
+                </h1>
+                <p class="subtitle">Estructura de datos probabilística interactiva</p>
+            </div>
+            <button class="theme-toggle" onclick="toggleTheme()" title="Cambiar tema">🌙</button>
+        </header>
+
+        <!-- CONFIGURACIÓN -->
+        <section class="config-section">
+            <h2>⚙️ Configuración del Filtro</h2>
+            <div class="config-grid">
+                <div class="config-item">
+                    <label for="elementos_esperados">
+                        Elementos Esperados (n)
+                        <span class="tooltip">?
+                            <span class="tooltiptext">Cantidad de elementos que planeas insertar</span>
+                        </span>
+                    </label>
+                    <input type="range" id="elementos_slider" min="10" max="1000" value="100">
+                    <input type="number" id="elementos_esperados" value="100" min="10" max="10000">
+                </div>
+                <div class="config-item">
+                    <label for="prob_falso_positivo">
+                        Prob. Falso Positivo (p)
+                        <span class="tooltip">?
+                            <span class="tooltiptext">Probabilidad de error aceptable (0.001 - 0.5)</span>
+                        </span>
+                    </label>
+                    <input type="range" id="probabilidad_slider" min="0.001" max="0.5" value="0.05" step="0.001">
+                    <input type="number" id="prob_falso_positivo" value="0.05" min="0.001" max="0.5" step="0.001">
+                </div>
+                <button class="btn-config" onclick="crearFiltro()">🚀 Crear Filtro</button>
+            </div>
+            <div class="info-config" id="info_config">
+                <p>Presiona "Crear Filtro" para inicializar el sistema</p>
+            </div>
+        </section>
+
+        <!-- VISUALIZACIÓN DE BITS -->
+        <section class="bits-section">
+            <div class="bits-header">
+                <h2>📊 Arreglo de Bits</h2>
+                <div class="zoom-controls">
+                    <button onclick="zoomBits(-1)" title="Alejar">➖</button>
+                    <span id="zoom_level">100%</span>
+                    <button onclick="zoomBits(1)" title="Acercar">➕</button>
+                </div>
+            </div>
+            <div class="bits-container" id="bits_container">
+                <p style="text-align: center; color: #999; width: 100%;">Crea un filtro primero</p>
+            </div>
+            <div class="bits-stats">
+                <div class="stat-box">
+                    <span class="stat-label">Bits Encendidos:</span>
+                    <span class="stat-value"><span id="bits_encendidos">0</span> / <span id="bits_totales">0</span></span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress_fill" style="width: 0%">
+                        <div class="progress-shimmer"></div>
+                    </div>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-label">Ocupación:</span>
+                    <span class="stat-value" id="ocupacion">0%</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- INFORMACIÓN TÉCNICA -->
+        <section class="info-cards">
+            <div class="info-card">
+                <h3>Tamaño Array (m)</h3>
+                <p id="info_m">-</p>
+            </div>
+            <div class="info-card">
+                <h3>Funciones Hash (k)</h3>
+                <p id="info_k">-</p>
+            </div>
+            <div class="info-card">
+                <h3>Elementos Insertados</h3>
+                <p id="info_elementos">0</p>
+            </div>
+            <div class="info-card">
+                <h3>Memoria Estimada</h3>
+                <p id="info_memoria">-</p>
+            </div>
+        </section>
+
+        <!-- OPERACIONES -->
+        <section class="operations-section">
+            <h2>🎯 Operaciones</h2>
+            <div class="operation-tabs">
+                <button class="tab-btn active" onclick="cambiarTab('insertar')">➕ Insertar</button>
+                <button class="tab-btn" onclick="cambiarTab('consultar')">🔎 Consultar</button>
+                <button class="tab-btn" onclick="cambiarTab('palabras')">📋 Palabras</button>
+                <button class="tab-btn" onclick="cambiarTab('info')">ℹ️ Info</button>
+            </div>
+
+            <!-- TAB: INSERTAR -->
+            <div class="tab-content active" id="tab_insertar">
+                <div class="operation-form">
+                    <label for="palabra_insertar">Palabra a insertar:</label>
+                    <input type="text" id="palabra_insertar" placeholder="Ingresa una palabra..." autocomplete="off">
+                    <button class="btn-primary" onclick="insertar()">✅ Insertar Palabra</button>
+                </div>
+                <div class="message-box" id="message_insertar"></div>
+            </div>
+
+            <!-- TAB: CONSULTAR -->
+            <div class="tab-content" id="tab_consultar">
+                <div class="operation-form">
+                    <label for="palabra_consultar">Palabra a consultar:</label>
+                    <input type="text" id="palabra_consultar" placeholder="Ingresa una palabra..." autocomplete="off">
+                    <button class="btn-primary" onclick="consultar()">🔍 Consultar Palabra</button>
+                </div>
+                <div class="message-box" id="message_consultar"></div>
+            </div>
+
+            <!-- TAB: PALABRAS INSERTADAS -->
+            <div class="tab-content" id="tab_palabras">
+                <div class="palabras-list" id="palabras_list">
+                    <p style="text-align: center; color: #999;">No hay palabras insertadas aún</p>
+                </div>
+            </div>
+
+            <!-- TAB: INFORMACIÓN -->
+            <div class="tab-content" id="tab_info">
+                <div class="info-content">
+                    <h3>¿Qué es un Filtro de Bloom?</h3>
+                    <p>Un Filtro de Bloom es una estructura de datos probabilística que verifica eficientemente si un elemento es miembro de un conjunto. Permite falsos positivos pero garantiza que NO hay falsos negativos.</p>
+                    
+                    <h3>✅ Ventajas</h3>
+                    <ul>
+                        <li>Muy eficiente en memoria</li>
+                        <li>Búsqueda O(k) extremadamente rápida</li>
+                        <li>Ideal para bases de datos y cachés</li>
+                        <li>No requiere almacenar elementos</li>
+                    </ul>
+
+                    <h3>❌ Desventajas</h3>
+                    <ul>
+                        <li>Permite falsos positivos</li>
+                        <li>No se pueden eliminar elementos fácilmente</li>
+                        <li>Requiere ajustar parámetros m y k</li>
+                    </ul>
+
+                    <h3>🌍 Casos de Uso</h3>
+                    <ul>
+                        <li>Verificación de URLs maliciosos en navegadores</li>
+                        <li>Cachés y filtros de spam</li>
+                        <li>Bases de datos NoSQL (como Cassandra)</li>
+                        <li>Sistemas de recomendación</li>
+                        <li>Detección de duplicados</li>
+                    </ul>
+
+                    <h3>📐 Fórmulas Matemáticas</h3>
+                    <div class="formulas">
+                        <p><strong>m = -(n × ln(p)) / (ln(2)²)</strong></p>
+                        <p>Tamaño óptimo del arreglo de bits</p>
+                        <p style="margin-top: 15px;"><strong>k = (m / n) × ln(2)</strong></p>
+                        <p>Cantidad óptima de funciones hash</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>
