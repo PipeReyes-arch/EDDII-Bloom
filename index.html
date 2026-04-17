@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bloom Filter Interactive Interface</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(to right, #141e30, #243b55);
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background: #007BFF;
+            color: white;
+        }
+        button:hover {
+            background: #0056b3;
+            transition: background 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Bloom Filter Interactive Interface</h1>
+        <label for="input">Enter your data:</label>
+        <input type="text" id="input" placeholder="Type something...">
+        <button onclick="addData()">Add to Filter</button>
+        <button onclick="checkData()">Check in Filter</button>
+        <div id="result"></div>
+    </div>
+    <script>
+        const bloomFilter = new BloomFilter(100, 5);
+
+        function addData() {
+            const input = document.getElementById('input').value;
+            bloomFilter.add(input);
+            document.getElementById('result').innerText = 'Data added!';
+        }
+
+        function checkData() {
+            const input = document.getElementById('input').value;
+            const result = bloomFilter.check(input);
+            document.getElementById('result').innerText = result ? 'Data might be in the filter!' : 'Data is definitely not in the filter.';
+        }
+
+        class BloomFilter {
+            constructor(size, hashCount) {
+                this.size = size;
+                this.hashCount = hashCount;
+                this.filter = new Array(size).fill(false);
+            }
+
+            add(data) {
+                for (let i = 0; i < this.hashCount; i++) {
+                    const hash = this.hash(data + i) % this.size;
+                    this.filter[hash] = true;
+                }
+            }
+
+            check(data) {
+                for (let i = 0; i < this.hashCount; i++) {
+                    const hash = this.hash(data + i) % this.size;
+                    if (!this.filter[hash]) return false;
+                }
+                return true;
+            }
+
+            hash(data) {
+                let hash = 0;
+                for (let i = 0; i < data.length; i++) {
+                    hash = (hash << 5) - hash + data.charCodeAt(i);
+                    hash |= 0;
+                }
+                return hash;
+            }
+        }
+    </script>
+</body>
+</html>
